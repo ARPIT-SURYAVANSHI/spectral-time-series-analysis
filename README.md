@@ -1,82 +1,207 @@
-# X-ray Timing Analysis and QPO Detection using Power Spectral Modeling
+# X-ray Timing Analysis and QPO Detection Pipeline
 
-This project performs a detailed timing analysis of X-ray light curve data to study variability properties and detect quasi-periodic oscillations (QPOs). The analysis is based on power density spectrum (PDS) estimation, logarithmic rebinning, and statistical model fitting using physically motivated spectral components.
+A Python-based pipeline for timing analysis of X-ray light curves, power density spectrum (PDS) generation, and quasi-periodic oscillation (QPO) detection using spectral modeling techniques commonly employed in high-energy astrophysics.
 
 ---
 
 ## Overview
 
-X-ray variability carries crucial information about accretion processes in compact objects such as black holes and neutron stars. In this project, time-domain light curve data are transformed into the frequency domain to characterize broadband noise and identify narrow spectral features associated with QPOs.
+Variability in X-ray emission from compact objects such as neutron stars and black holes provides valuable insight into accretion physics and disk dynamics. This project analyzes X-ray light curves in the frequency domain by constructing Power Density Spectra (PDS), modeling broadband noise components, and identifying narrow quasi-periodic oscillation (QPO) features.
 
-The workflow includes:
-- Light curve preprocessing
-- Power density spectrum computation using FFT
-- Averaging over multiple segments to reduce variance
-- Logarithmic rebinning with error propagation
-- Model fitting using power-law and Lorentzian components
-- Statistical evaluation using χ² and residual analysis
+The pipeline performs:
 
----
-
-## Methodology
-
-### 1. Light Curve Processing
-- Input X-ray light curves are read from FITS files.
-- Invalid or non-finite data points are removed.
-- The data are segmented into equal-length intervals to enable averaged PDS estimation.
-
-### 2. Power Density Spectrum (PDS)
-- The PDS is computed using the squared modulus of the Fourier transform.
-- Fractional rms normalization is applied.
-- PDS from multiple segments are averaged to suppress stochastic noise.
-- Logarithmic rebinning is performed to improve signal-to-noise at high frequencies.
-
-### 3. Spectral Modeling
-The rebinned PDS is modeled using:
-- **Power-law**: to represent broadband noise
-- **Lorentzian component(s)**: to model quasi-periodic oscillations (QPOs)
-
-Models implemented:
-- Power-law only
-- Power-law + single Lorentzian
-- Power-law + two Lorentzians (optional)
-
-Model parameters are estimated using non-linear least squares fitting with uncertainty propagation.
-
-### 4. Statistical Evaluation
-- χ² and reduced χ² are computed for goodness-of-fit assessment
-- Residuals are analyzed to validate model adequacy
-- QPO centroid frequency, width, and quality factor (Q) are derived
+* FITS light curve ingestion
+* Data cleaning and preprocessing
+* Averaged PDS estimation using FFT
+* Fractional RMS normalization
+* Logarithmic frequency rebinning
+* Power-law noise fitting
+* Lorentzian QPO modeling
+* Q-factor estimation
+* Goodness-of-fit analysis using χ² statistics
 
 ---
 
-## Results
+## Scientific Motivation
 
-- The averaged PDS shows a clear broadband noise component.
-- A statistically significant narrow feature is detected and modeled as a Lorentzian.
-- The inclusion of a Lorentzian component significantly improves the fit compared to a pure power-law model.
-- Residual analysis confirms the presence of a QPO-like feature at the fitted centroid frequency.
+Quasi-Periodic Oscillations (QPOs) appear as narrow peaks in the power spectrum of accreting compact objects and are believed to originate from physical processes occurring in the inner accretion flow.
+
+Detecting and characterizing these features allows investigation of:
+
+* Accretion disk variability
+* Inner disk dynamics
+* Characteristic variability timescales
+* Neutron star and black hole environments
 
 ---
 
-## Repository Structure
+## Analysis Workflow
+
+```text
+FITS Light Curve
+        ↓
+Data Cleaning
+        ↓
+Segmentation
+        ↓
+FFT
+        ↓
+Power Density Spectrum
+        ↓
+Segment Averaging
+        ↓
+Logarithmic Rebinning
+        ↓
+Model Fitting
+        ↓
+QPO Detection & Characterization
+```
+
+---
+
+## Models Implemented
+
+### Broadband Noise Model
+
+Power-law model:
+
+P(f) = A f^(-α) + C
+
+where:
+
+* A = normalization
+* α = power-law index
+* C = white-noise level
+
+---
+
+### QPO Model
+
+Lorentzian profile:
+
+L(f) = (Norm × Width / 2π) / [(f − f₀)² + (Width/2)²]
+
+where:
+
+* f₀ = centroid frequency
+* Width = FWHM
+* Norm = amplitude
+
+---
+
+### Composite Model
+
+Power-law + Lorentzian
+
+Used to identify statistically significant QPO-like features above the broadband noise continuum.
+
+---
+
+## Features
+
+### Light Curve Processing
+
+* FITS file support
+* NaN and invalid-value removal
+* Uniform segmentation
+* Error propagation
+
+### Power Spectrum Analysis
+
+* FFT-based PDS computation
+* Fractional RMS normalization
+* Segment averaging
+* Logarithmic rebinning
+
+### Spectral Modeling
+
+* Power-law fitting
+* Lorentzian fitting
+* Power-law + Lorentzian fitting
+* Multi-component model support
+
+### Statistical Evaluation
+
+* χ²
+* Reduced χ²
+* Residual analysis
+* Parameter uncertainties
+
+### QPO Characterization
+
+* Centroid frequency
+* Width (FWHM)
+* Quality Factor (Q)
+* Variability timescale estimation
+
+---
 
 ## Repository Structure
 
 ```text
 .
 ├── data/
-│   └── test4.lc                  # Input X-ray light curve (FITS)
+│   └── test4.lc
+│
 ├── src/
-│   ├── io_utils.py               # FITS I/O and preprocessing
-│   ├── pds.py                    # Power Density Spectrum computation & rebinning
-│   ├── models.py                 # Power-law and Lorentzian models
-│   ├── fitting.py                # Model fitting and χ² statistics
-│   ├── plotting.py               # Plotting utilities
-│   └── main.py                   # End-to-end analysis pipeline
-├── plots/
-│   ├── lightcurve_raw.png
-│   ├── pds_averaged_logrebinned.png
-│   └── pds_fit_powerlaw_lorentzian_qpo.png
-├── requirements.txt              # Python dependencies
-└── README.md                     # Project documentation
+│   ├── load_data.py
+│   ├── pds.py
+│   ├── models.py
+│   ├── fit_models.py
+│   ├── plotting.py
+│   └── main.py
+│
+├── notebooks/
+│   └── lc_fft_analysis.ipynb
+│
+├── results/
+│   ├── lightcurve.png
+│   ├── pds.png
+│   ├── powerlaw_fit.png
+│   └── qpo_fit.png
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Example Outputs
+
+* Raw light curve visualization
+* Averaged power density spectrum
+* Log-rebinned PDS
+* Broadband noise fit
+* QPO candidate detection
+* Residual analysis
+
+---
+
+## Dependencies
+
+* NumPy
+* SciPy
+* Matplotlib
+* Astropy
+
+Install:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Future Improvements
+
+* Automatic QPO significance testing
+* Bayesian parameter estimation (MCMC)
+* Multi-Lorentzian decomposition
+* Dynamic power spectrum generation
+* NICER/XMM-Newton pipeline integration
+
+---
+
+## Author
+
+Developed as part of an undergraduate research project in X-ray timing analysis and variability studies of compact astrophysical systems.
